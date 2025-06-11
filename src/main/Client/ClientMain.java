@@ -1,25 +1,40 @@
 package main.Client;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class ClientMain {
-    private static final String ip = "0.0.0.0";
+    private static final String serverIP = "0.0.0.0";
     private static final int port = 12345;
+    private static Socket clientSocket;
 
     public static void main(String[] args) throws IOException {
-        InetAddress address = InetAddress.getByName(ip);
-
-        Socket clientSocket = new Socket(address,port);
+        try {
+            connectToServer();
+        } catch(InterruptedException e) {
+            System.out.println("Server interrupted");
+        }
 
         ChatClient client = new ChatClient(clientSocket);
 
-        Thread clientThread = new Thread(client::start);
-        clientThread.start();
+        client.start();
 
         receiveInput(client);
+    }
+
+    private static void connectToServer() throws InterruptedException {
+        try {
+            clientSocket = new Socket(serverIP,port);
+
+            System.out.println("Connected to server : " + clientSocket.getInetAddress().toString());
+        } catch (IOException e){
+            System.out.println("Could not connect to server. Will try again...\n");
+            Thread.sleep(1000);
+            connectToServer();
+        }
     }
 
     private static void receiveInput(ChatClient chatClient) throws IOException {
@@ -30,6 +45,7 @@ public class ClientMain {
 
             if(message.equals("quit")) {
                 chatClient.closeConnection();
+                return;
             }
 
             chatClient.sendMessage(message);

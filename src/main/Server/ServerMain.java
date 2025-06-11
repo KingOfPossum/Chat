@@ -16,7 +16,7 @@ public class ServerMain {
             server.start();
 
         } catch (IOException e) {
-            System.out.println("Server Error");
+            System.out.println("Error while starting server!");
         }
     }
 }

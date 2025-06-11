@@ -45,21 +45,32 @@ public class ChatServer {
             while(true) {
                 String message = clientReader.readLine();
 
+                if(message == null) {
+                    closeConnection(clientSocket);
+                    return;
+                }
+
                 System.out.println(message);
 
                 sendMessage(clientSocket,message);
             }
         } catch (IOException e) {
             System.out.println("Error reading from client!");
+            closeConnection(clientSocket);
         }
     }
 
     private void sendMessage(Socket sender, String message) {
+        Socket currentClient = sender;
+
         try {
             for (Socket client : this.clients) {
+                currentClient = client;
+
                 if (client.equals(sender)) {
                     continue;
                 }
+
                 BufferedWriter clientWriter = this.clientWriters.get(client);
                 clientWriter.write(message);
                 clientWriter.newLine();
@@ -67,6 +78,27 @@ public class ChatServer {
             }
         } catch (IOException e) {
             System.out.println("Error while writing to client!");
+            closeConnection(currentClient);
+        }
+    }
+
+    private void closeConnection(Socket client) {
+        try {
+            if(!client.isClosed()) {
+                client.close();
+            }
+
+            this.clients.remove(client);
+
+            this.clientWriters.get(client).close();
+            this.clientWriters.remove(client);
+
+            this.clientReaders.get(client).close();
+            this.clientReaders.remove(client);
+
+            System.out.println("Closed connection to " + client.getInetAddress().toString());
+        } catch (IOException e) {
+            System.out.println("Error while closing connection");
         }
     }
 }
