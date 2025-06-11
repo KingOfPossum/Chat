@@ -46,9 +46,27 @@ public class ChatServer {
                 String message = clientReader.readLine();
 
                 System.out.println(message);
+
+                sendMessage(clientSocket,message);
             }
         } catch (IOException e) {
             System.out.println("Error reading from client!");
+        }
+    }
+
+    private void sendMessage(Socket sender, String message) {
+        try {
+            for (Socket client : this.clients) {
+                if (client.equals(sender)) {
+                    continue;
+                }
+                BufferedWriter clientWriter = this.clientWriters.get(client);
+                clientWriter.write(message);
+                clientWriter.newLine();
+                clientWriter.flush();
+            }
+        } catch (IOException e) {
+            System.out.println("Error while writing to client!");
         }
     }
 }

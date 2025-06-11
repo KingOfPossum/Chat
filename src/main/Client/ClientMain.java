@@ -15,7 +15,9 @@ public class ClientMain {
         Socket clientSocket = new Socket(address,port);
 
         ChatClient client = new ChatClient(clientSocket);
-        client.start();
+
+        Thread clientThread = new Thread(client::start);
+        clientThread.start();
 
         receiveInput(client);
     }

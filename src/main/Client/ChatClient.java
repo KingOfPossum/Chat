@@ -12,10 +12,16 @@ public class ChatClient {
         this.writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
     }
 
-    public void start() throws IOException {
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-
-        writer.write("Hallo");
+    public void start() {
+        try {
+            while (true) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                String message = reader.readLine();
+                System.out.println(message);
+            }
+        } catch (IOException e) {
+            System.out.println("Error while reading message");
+        }
     }
 
     public void closeConnection() throws IOException {
