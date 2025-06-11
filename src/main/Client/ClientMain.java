@@ -26,29 +26,32 @@ public class ClientMain {
     }
 
     private static void connectToServer() throws InterruptedException {
-        try {
-            clientSocket = new Socket(serverIP,port);
-
-            System.out.println("Connected to server : " + clientSocket.getInetAddress().toString());
-        } catch (IOException e){
-            System.out.println("Could not connect to server. Will try again...\n");
-            Thread.sleep(1000);
-            connectToServer();
+        while(true) {
+            try {
+                clientSocket = new Socket(serverIP,port);
+                System.out.println("Connected to server : " + clientSocket.getInetAddress().toString());
+                break;
+            } catch (IOException e){
+                System.out.println("Could not connect to server. Retrying in 1 second ...");
+                Thread.sleep(1000);
+            }
         }
     }
 
-    private static void receiveInput(ChatClient chatClient) throws IOException {
-        Scanner scanner = new Scanner(System.in);
+    private static void receiveInput(ChatClient chatClient){
+        try(Scanner scanner = new Scanner(System.in)) {
+            while(true) {
+                String message = scanner.nextLine();
 
-        while(true) {
-            String message = scanner.nextLine();
+                if(message.equals("quit")) {
+                    chatClient.closeConnection();
+                    return;
+                }
 
-            if(message.equals("quit")) {
-                chatClient.closeConnection();
-                return;
+                chatClient.sendMessage(message);
             }
-
-            chatClient.sendMessage(message);
+        } catch (Exception e){
+            System.out.println("Input error : " + e.getMessage());
         }
     }
 }

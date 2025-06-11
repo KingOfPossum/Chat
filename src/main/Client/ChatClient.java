@@ -29,6 +29,7 @@ public class ChatClient {
             }
         } catch (IOException e) {
             System.out.println("Error while reading message");
+        } finally {
             closeConnection();
         }
     }
@@ -45,9 +46,11 @@ public class ChatClient {
     }
 
     public void closeConnection(){
+        if(!listen) {return;}
+
+        listen = false;
+
         try {
-            if(socket.isClosed()) {return;}
-            listen = false;
             socket.close();
             writer.close();
             reader.close();

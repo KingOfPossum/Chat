@@ -3,16 +3,14 @@ package main.Server;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class ChatServer {
     private final ServerSocket serverSocket;
 
-    private final List<Socket> clients = new ArrayList<>();
-    private final HashMap<Socket,BufferedReader> clientReaders = new HashMap<>();
-    private final HashMap<Socket, BufferedWriter> clientWriters = new HashMap<>();
+    private final List<Socket> clients = Collections.synchronizedList(new ArrayList<Socket>());
+    private final Map<Socket, BufferedReader> clientReaders = Collections.synchronizedMap(new HashMap<>());
+    private final Map<Socket, BufferedWriter> clientWriters = Collections.synchronizedMap(new HashMap<>());
 
     public ChatServer(ServerSocket serverSocket) {
         this.serverSocket = serverSocket;
@@ -23,18 +21,40 @@ public class ChatServer {
         try {
             while(true) {
                 Socket newConnection = this.serverSocket.accept();
-
-                System.out.println("New connection from " + newConnection.getInetAddress().toString());
-
-                this.clients.add(newConnection);
-                this.clientReaders.put(newConnection,new BufferedReader(new InputStreamReader(newConnection.getInputStream())));
-                this.clientWriters.put(newConnection,new BufferedWriter(new OutputStreamWriter(newConnection.getOutputStream())));
-
-                Thread clientListenerThread = new Thread(()->listen(newConnection));
-                clientListenerThread.start();
+                addClient(newConnection);
             }
         } catch (IOException e) {
             System.out.println("Error while accepting new client connection");
+        }
+    }
+
+    private void addClient(Socket client) {
+        try {
+            this.clients.add(client);
+            this.clientReaders.put(client,new BufferedReader(new InputStreamReader(client.getInputStream())));
+            this.clientWriters.put(client,new BufferedWriter(new OutputStreamWriter(client.getOutputStream())));
+
+            System.out.println("New connection from " + client.getInetAddress().toString());
+
+            Thread clientListenerThread = new Thread(()->listen(client));
+            clientListenerThread.setDaemon(true);
+            clientListenerThread.start();
+        } catch(IOException e) {
+            System.out.println("Error while adding client connection");
+        }
+    }
+
+    private void removeClient(Socket client) {
+        try {
+            this.clients.remove(client);
+
+            this.clientWriters.get(client).close();
+            this.clientWriters.remove(client);
+
+            this.clientReaders.get(client).close();
+            this.clientReaders.remove(client);
+        } catch(IOException e) {
+            System.out.println("Error while removing client connection");
         }
     }
 
@@ -84,17 +104,11 @@ public class ChatServer {
 
     private void closeConnection(Socket client) {
         try {
+            removeClient(client);
+
             if(!client.isClosed()) {
                 client.close();
             }
-
-            this.clients.remove(client);
-
-            this.clientWriters.get(client).close();
-            this.clientWriters.remove(client);
-
-            this.clientReaders.get(client).close();
-            this.clientReaders.remove(client);
 
             System.out.println("Closed connection to " + client.getInetAddress().toString());
         } catch (IOException e) {
