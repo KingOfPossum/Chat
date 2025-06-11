@@ -1,8 +1,9 @@
 package main.Client;
 
+import javafx.stage.Stage;
+import main.Client.UI.ClientApplication;
+
 import java.io.IOException;
-import java.net.ConnectException;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -12,6 +13,9 @@ public class ClientMain {
     private static Socket clientSocket;
 
     public static void main(String[] args) throws IOException {
+        // Start the application (GUI)
+        ClientApplication.launch(ClientApplication.class,args);
+
         try {
             connectToServer();
         } catch(InterruptedException e) {
@@ -19,7 +23,6 @@ public class ClientMain {
         }
 
         ChatClient client = new ChatClient(clientSocket);
-
         client.start();
 
         receiveInput(client);
