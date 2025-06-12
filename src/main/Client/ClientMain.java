@@ -1,34 +1,40 @@
 package main.Client;
 
-import javafx.stage.Stage;
-import main.Client.UI.ClientApplication;
-
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class ClientMain {
-    private static final String serverIP = "0.0.0.0";
-    private static final int port = 12345;
-    private static Socket clientSocket;
+    private final String serverIP = "0.0.0.0";
+    private final int port = 12345;
+    private Socket clientSocket;
+    private ChatClient chatClient;
 
-    public static void main(String[] args) throws IOException {
-        // Start the application (GUI)
-        ClientApplication.launch(ClientApplication.class,args);
-
+    public void start() {
         try {
             connectToServer();
         } catch(InterruptedException e) {
             System.out.println("Server interrupted");
         }
 
-        ChatClient client = new ChatClient(clientSocket);
-        client.start();
+        try {
+            this.chatClient = new ChatClient(clientSocket);
+            chatClient.start();
 
-        receiveInput(client);
+            //receiveInput(chatClient);
+        } catch (IOException e) {
+            System.out.println("Starting client failed : " + e.getMessage());
+        }
+
     }
 
-    private static void connectToServer() throws InterruptedException {
+    public void stop() {
+        if(chatClient != null) {
+            chatClient.closeConnection();
+        }
+    }
+
+    private void connectToServer() throws InterruptedException {
         while(true) {
             try {
                 clientSocket = new Socket(serverIP,port);
@@ -41,7 +47,11 @@ public class ClientMain {
         }
     }
 
-    private static void receiveInput(ChatClient chatClient){
+    public void sendMessage(String message) {
+        this.chatClient.sendMessage(message);
+    }
+
+    private void receiveInput(ChatClient chatClient){
         try(Scanner scanner = new Scanner(System.in)) {
             while(true) {
                 String message = scanner.nextLine();

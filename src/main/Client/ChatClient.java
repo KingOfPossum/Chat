@@ -1,5 +1,7 @@
 package main.Client;
 
+import main.Client.UI.ClientApplication;
+
 import java.io.*;
 import java.net.Socket;
 
