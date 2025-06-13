@@ -10,14 +10,14 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import main.Client.ClientMain;
+import main.Client.ChatClient;
 
 import java.util.Optional;
 
 public class ClientApplication extends Application {
 
     private Stage mainStage;
-    private ClientMain client;
+    private ChatClient client;
     private String userName;
 
     @Override
@@ -47,8 +47,8 @@ public class ClientApplication extends Application {
         }
 
         Thread serverClientThread = new Thread(() -> {
-            this.client = new ClientMain();
-            this.client.start();});
+            client = new ChatClient("0.0.0.0",12345);
+            client.start();});
 
         serverClientThread.start();
 
@@ -59,7 +59,7 @@ public class ClientApplication extends Application {
         mainStage.setHeight(500);
         mainStage.setResizable(false);
 
-        mainStage.setOnCloseRequest(event -> {this.client.stop();});
+        mainStage.setOnCloseRequest(event -> {client.closeConnection();});
 
         mainStage.setScene(createScene());
         mainStage.show();
@@ -99,6 +99,10 @@ public class ClientApplication extends Application {
             this.client.sendMessage(input);
             textArea.setText(textArea.getText() + "\n" + userName + " : " + input + "\n");
             inputField.setText("");
+        });
+
+        client.setMessageListener((message) -> {
+            textArea.setText(textArea.getText() + "\n" + "____" + " : " + message + "\n");
         });
 
         Scene scene = new Scene(hBox,950,700);
