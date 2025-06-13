@@ -3,12 +3,15 @@ package main.Client;
 import java.io.*;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
+import com.google.gson.Gson;
 
 public class ChatClient {
     private final int port;
     private final String serverIP;
 
     private Socket socket;
+
+    private Gson gson = new Gson();
 
     private BufferedWriter writer;
     private BufferedReader reader;
@@ -72,7 +75,9 @@ public class ChatClient {
             while((message = reader.readLine()) != null)
             {
                 if(messageListener != null) {
-                    messageListener.onMessageReceived(message);
+                    ChatMessage chatMessage = gson.fromJson(message,ChatMessage.class);
+
+                    messageListener.onMessageReceived(chatMessage);
                 }
             }
         } catch (IOException e) {
@@ -82,9 +87,11 @@ public class ChatClient {
         }
     }
 
-    public void sendMessage(String message) {
+    public void sendMessage(ChatMessage message) {
         try {
-            writer.write(message);
+            String jsonMsg = gson.toJson(message);
+
+            writer.write(jsonMsg);
             writer.newLine();
             writer.flush();
         } catch (IOException e) {

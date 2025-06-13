@@ -1,5 +1,8 @@
 package main.Server;
 
+import com.google.gson.Gson;
+import main.Client.ChatMessage;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,6 +16,8 @@ public class ChatServer {
     private final Map<Socket, BufferedWriter> clientWriters = Collections.synchronizedMap(new HashMap<>());
 
     private ServerSocket serverSocket;
+
+    private final Gson gson = new Gson();
 
     public ChatServer(int port) {
         this.port = port;
@@ -78,9 +83,11 @@ public class ChatServer {
                     return;
                 }
 
-                System.out.println(message);
+                ChatMessage chatMessage = gson.fromJson(message,ChatMessage.class);
 
-                sendMessage(clientSocket,message);
+                System.out.println(chatMessage.userName() + " : " + chatMessage.message());
+
+                broadcast(clientSocket,chatMessage);
             }
         } catch (IOException e) {
             System.out.println("Error reading from client!");
@@ -88,8 +95,10 @@ public class ChatServer {
         }
     }
 
-    private void sendMessage(Socket sender, String message) {
+    private void broadcast(Socket sender, ChatMessage chatMessage) {
         Socket currentClient = sender;
+
+        String jsonMsg = gson.toJson(chatMessage);
 
         try {
             for (Socket client : this.clients) {
@@ -100,7 +109,7 @@ public class ChatServer {
                 }
 
                 BufferedWriter clientWriter = this.clientWriters.get(client);
-                clientWriter.write(message);
+                clientWriter.write(jsonMsg);
                 clientWriter.newLine();
                 clientWriter.flush();
             }

@@ -8,28 +8,39 @@ public class ClientMain {
 
     private static ChatClient client;
 
+    private static Scanner scanner = new Scanner(System.in);
+    private static String userName;
+
     public static void main(String[] args) {
+        setUserName();
+
         client = new ChatClient(serverIP,port);
         client.start();
 
-        client.setMessageListener(message -> {
-            System.out.println("Got message : " + message);
+        client.setMessageListener(chatMessage -> {
+            System.out.println("Got message : [" + chatMessage.userName() + " : " + chatMessage.message() + "]");
         });
 
         receiveUserInput();
     }
 
-    private static void receiveUserInput(){
-        try(Scanner scanner = new Scanner(System.in)) {
-            while(true) {
-                String message = scanner.nextLine();
+    private static void setUserName() {
+        System.out.print("Please enter your user name: ");
+        userName = scanner.nextLine();
+    }
 
+    private static void receiveUserInput(){
+        try {
+            String message;
+            while((message = scanner.nextLine()) != null) {
                 if(message.equals("quit")) {
                     client.closeConnection();
                     return;
                 }
 
-                client.sendMessage(message);
+                ChatMessage chatMessage = new ChatMessage(userName,message);
+
+                client.sendMessage(chatMessage);
             }
         } catch (Exception e){
             System.out.println("Input error : " + e.getMessage());

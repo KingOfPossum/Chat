@@ -2,5 +2,5 @@ package main.Client;
 
 @FunctionalInterface
 public interface MessageListener {
-    void onMessageReceived(String message);
+    void onMessageReceived(ChatMessage message);
 }

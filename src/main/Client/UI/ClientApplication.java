@@ -11,6 +11,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import main.Client.ChatClient;
+import main.Client.ChatMessage;
 
 import java.util.Optional;
 
@@ -96,13 +97,16 @@ public class ClientApplication extends Application {
 
         inputField.setOnAction(event -> {
             String input = inputField.getText();
-            this.client.sendMessage(input);
-            textArea.setText(textArea.getText() + "\n" + userName + " : " + input + "\n");
+
+            ChatMessage chatMessage = new ChatMessage(userName,input);
+
+            this.client.sendMessage(chatMessage);
+            textArea.setText(textArea.getText() + "\n" + chatMessage.userName() + " : " + chatMessage.message() + "\n");
             inputField.setText("");
         });
 
-        client.setMessageListener((message) -> {
-            textArea.setText(textArea.getText() + "\n" + "____" + " : " + message + "\n");
+        client.setMessageListener((chatMessage) -> {
+            textArea.setText(textArea.getText() + "\n" + chatMessage.userName() + " : " + chatMessage.message() + "\n");
         });
 
         Scene scene = new Scene(hBox,950,700);
