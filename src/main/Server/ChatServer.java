@@ -6,17 +6,25 @@ import java.net.Socket;
 import java.util.*;
 
 public class ChatServer {
-    private final ServerSocket serverSocket;
+    private final int port;
 
     private final List<Socket> clients = Collections.synchronizedList(new ArrayList<Socket>());
     private final Map<Socket, BufferedReader> clientReaders = Collections.synchronizedMap(new HashMap<>());
     private final Map<Socket, BufferedWriter> clientWriters = Collections.synchronizedMap(new HashMap<>());
 
-    public ChatServer(ServerSocket serverSocket) {
-        this.serverSocket = serverSocket;
+    private ServerSocket serverSocket;
+
+    public ChatServer(int port) {
+        this.port = port;
     }
 
     public void start() {
+        try {
+            serverSocket = new ServerSocket(port);
+        } catch (IOException e) {
+            System.out.println("Starting server failed : " + e.getMessage());
+        }
+
         // Checks for new connections
         try {
             while(true) {
