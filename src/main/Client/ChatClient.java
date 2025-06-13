@@ -2,6 +2,7 @@ package main.Client;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ChatClient {
     private final int port;
@@ -14,7 +15,7 @@ public class ChatClient {
 
     private MessageListener messageListener;
 
-    private volatile boolean listen = true;
+    private AtomicBoolean closedConnection = new AtomicBoolean(false);
 
     public ChatClient(String serverIP,int port) {
         this.serverIP = serverIP;
@@ -26,24 +27,24 @@ public class ChatClient {
     }
 
     public void start() {
-        // Try to connect to the server
+        connect();
+
+        startListening();
+    }
+
+    private void connect() {
         try {
             connectToServer();
         } catch (InterruptedException e) {
             System.out.println(e.getMessage());
         }
 
-        // Set our writer and reader so we can send and receive data
         try {
             writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
             reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         } catch(IOException e) {
             System.out.println("Error while getting Output or Input Stream of socket : " + e.getMessage());
         }
-
-        // Start listening for incoming data
-        Thread listenThread = new Thread(this::listen);
-        listenThread.start();
     }
 
     private void connectToServer() throws InterruptedException {
@@ -57,6 +58,12 @@ public class ChatClient {
                 Thread.sleep(1000);
             }
         }
+    }
+
+    private void startListening() {
+        Thread listenThread = new Thread(this::listen);
+        listenThread.setDaemon(true);
+        listenThread.start();
     }
 
     public void listen() {
@@ -87,14 +94,13 @@ public class ChatClient {
     }
 
     public void closeConnection(){
-        if(!listen) {return;}
-
-        listen = false;
+        //Make sure the connection hasn't already been closed
+        if(closedConnection.getAndSet(true)) return;
 
         try {
-            socket.close();
-            writer.close();
-            reader.close();
+            if(socket != null) socket.close();
+            if(writer != null) writer.close();
+            if(reader != null) reader.close();
 
             System.out.println("Connection closed");
         } catch (IOException e) {
