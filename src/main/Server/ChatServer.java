@@ -2,6 +2,7 @@ package main.Server;
 
 import com.google.gson.Gson;
 import main.Client.ChatMessage;
+import main.Client.MessageListener;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -12,12 +13,14 @@ public class ChatServer {
     private final int port;
 
     private final List<Socket> clients = Collections.synchronizedList(new ArrayList<Socket>());
+    private final Map<Socket,String> clientToUsername = new HashMap<>();
     private final Map<Socket, BufferedReader> clientReaders = Collections.synchronizedMap(new HashMap<>());
     private final Map<Socket, BufferedWriter> clientWriters = Collections.synchronizedMap(new HashMap<>());
 
     private ServerSocket serverSocket;
 
     private final Gson gson = new Gson();
+    private MessageListener messageListener;
 
     public ChatServer(int port) {
         this.port = port;
@@ -30,7 +33,22 @@ public class ChatServer {
             System.out.println("Starting server failed : " + e.getMessage());
         }
 
-        // Checks for new connections
+        Thread logClientsThread = new Thread(() -> {
+            while (true) {
+                System.out.println(clientToUsername);
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        logClientsThread.start();
+
+        waitForNewClients();
+    }
+
+    private void waitForNewClients() {
         try {
             while(true) {
                 Socket newConnection = this.serverSocket.accept();
@@ -39,6 +57,10 @@ public class ChatServer {
         } catch (IOException e) {
             System.out.println("Error while accepting new client connection");
         }
+    }
+
+    public void setMessageListener(MessageListener messageListener) {
+        this.messageListener = messageListener;
     }
 
     private void addClient(Socket client) {
@@ -66,6 +88,8 @@ public class ChatServer {
 
             this.clientReaders.get(client).close();
             this.clientReaders.remove(client);
+
+            this.clientToUsername.remove(client);
         } catch(IOException e) {
             System.out.println("Error while removing client connection");
         }
@@ -84,10 +108,7 @@ public class ChatServer {
                 }
 
                 ChatMessage chatMessage = gson.fromJson(message,ChatMessage.class);
-
-                System.out.println(chatMessage.userName() + " : " + chatMessage.message());
-
-                broadcast(clientSocket,chatMessage);
+                messageListener.onMessageReceived(clientSocket,chatMessage);
             }
         } catch (IOException e) {
             System.out.println("Error reading from client!");
@@ -95,7 +116,11 @@ public class ChatServer {
         }
     }
 
-    private void broadcast(Socket sender, ChatMessage chatMessage) {
+    public void setClientUsername(Socket client, String username) {
+        this.clientToUsername.put(client,username);
+    }
+
+    public void broadcast(Socket sender, ChatMessage chatMessage) {
         Socket currentClient = sender;
 
         String jsonMsg = gson.toJson(chatMessage);

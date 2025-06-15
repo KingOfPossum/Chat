@@ -49,9 +49,22 @@ public class ClientApplication extends Application {
 
         Thread serverClientThread = new Thread(() -> {
             client = new ChatClient("0.0.0.0",12345);
-            client.start();});
+            client.start();
+
+            // Initialization message to send the clients userName to the server
+            ChatMessage initMessage = new ChatMessage(userName,"Init");
+            client.sendMessage(initMessage);
+        });
 
         serverClientThread.start();
+
+        // Make sure the client has started
+        //TODO replace with better solution
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         mainStage = stage;
 
@@ -100,12 +113,12 @@ public class ClientApplication extends Application {
 
             ChatMessage chatMessage = new ChatMessage(userName,input);
 
-            this.client.sendMessage(chatMessage);
+            client.sendMessage(chatMessage);
             textArea.setText(textArea.getText() + "\n" + chatMessage.userName() + " : " + chatMessage.message() + "\n");
             inputField.setText("");
         });
 
-        client.setMessageListener((chatMessage) -> {
+        client.setMessageListener((sender,chatMessage) -> {
             textArea.setText(textArea.getText() + "\n" + chatMessage.userName() + " : " + chatMessage.message() + "\n");
         });
 

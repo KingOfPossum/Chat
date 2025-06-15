@@ -5,6 +5,17 @@ public class ServerMain {
 
     public static void main(String[] args) {
         ChatServer server = new ChatServer(port);
+
+        server.setMessageListener((sender,msg) -> {
+            if(msg.message().equals("Init")) {
+                server.setClientUsername(sender,msg.userName());
+            }
+            else {
+                System.out.println(sender + " : " + msg.message());
+                server.broadcast(sender,msg);
+            }
+        });
+
         server.start();
     }
 }

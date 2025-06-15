@@ -17,7 +17,10 @@ public class ClientMain {
         client = new ChatClient(serverIP,port);
         client.start();
 
-        client.setMessageListener(chatMessage -> {
+        ChatMessage initMessage = new ChatMessage(userName,"Init");
+        client.sendMessage(initMessage);
+
+        client.setMessageListener((sender,chatMessage) -> {
             System.out.println("Got message : [" + chatMessage.userName() + " : " + chatMessage.message() + "]");
         });
 

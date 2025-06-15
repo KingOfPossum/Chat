@@ -77,7 +77,7 @@ public class ChatClient {
                 if(messageListener != null) {
                     ChatMessage chatMessage = gson.fromJson(message,ChatMessage.class);
 
-                    messageListener.onMessageReceived(chatMessage);
+                    messageListener.onMessageReceived(null,chatMessage);
                 }
             }
         } catch (IOException e) {
