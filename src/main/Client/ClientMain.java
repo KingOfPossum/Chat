@@ -21,7 +21,10 @@ public class ClientMain {
         client.sendMessage(initMessage);
 
         client.setMessageListener((sender,chatMessage) -> {
-            System.out.println("Got message : [" + chatMessage.userName() + " : " + chatMessage.message() + "]");
+            if(chatMessage.userName() == null) {
+                return;
+            }
+            System.out.println(chatMessage.userName() + " : " + chatMessage.message());
         });
 
         receiveUserInput();

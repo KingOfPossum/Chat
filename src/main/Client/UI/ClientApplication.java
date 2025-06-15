@@ -13,6 +13,7 @@ import javafx.stage.Stage;
 import main.Client.ChatClient;
 import main.Client.ChatMessage;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 public class ClientApplication extends Application {
@@ -95,6 +96,7 @@ public class ClientApplication extends Application {
         TextArea textArea = new TextArea();
         textArea.setPrefSize(350,350);
         textArea.setEditable(false);
+        textArea.setWrapText(true);
 
         // Input field for sending messages
         TextField inputField = new TextField();
@@ -119,7 +121,16 @@ public class ClientApplication extends Application {
         });
 
         client.setMessageListener((sender,chatMessage) -> {
-            textArea.setText(textArea.getText() + "\n" + chatMessage.userName() + " : " + chatMessage.message() + "\n");
+            if(chatMessage.userName() == null) {
+                System.out.println(chatMessage.message());
+                String msg = chatMessage.message().replaceAll("([\\[\\] ])","");;
+                String[] splitMsg = msg.split(",");
+
+                clientsField.setText(String.join("\n", String.join("\n", splitMsg)));
+            }
+            else {
+                textArea.setText(textArea.getText() + "\n" + chatMessage.userName() + " : " + chatMessage.message() + "\n");
+            }
         });
 
         Scene scene = new Scene(hBox,950,700);

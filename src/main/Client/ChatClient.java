@@ -25,14 +25,42 @@ public class ChatClient {
         this.port = port;
     }
 
-    public void setMessageListener(MessageListener messageListener) {
-        this.messageListener = messageListener;
-    }
-
     public void start() {
         connect();
 
         startListening();
+    }
+
+    public void setMessageListener(MessageListener messageListener) {
+        this.messageListener = messageListener;
+    }
+
+    public void sendMessage(ChatMessage message) {
+        try {
+            String jsonMsg = gson.toJson(message);
+
+            writer.write(jsonMsg);
+            writer.newLine();
+            writer.flush();
+        } catch (IOException e) {
+            System.out.println("Error while sending message");
+            closeConnection();
+        }
+    }
+
+    public void closeConnection(){
+        //Make sure the connection hasn't already been closed
+        if(closedConnection.getAndSet(true)) return;
+
+        try {
+            if(socket != null) socket.close();
+            if(writer != null) writer.close();
+            if(reader != null) reader.close();
+
+            System.out.println("Connection closed");
+        } catch (IOException e) {
+            System.out.println("Error while closing connection");
+        }
     }
 
     private void connect() {
@@ -69,7 +97,7 @@ public class ChatClient {
         listenThread.start();
     }
 
-    public void listen() {
+    private void listen() {
         try {
             String message;
             while((message = reader.readLine()) != null)
@@ -87,31 +115,4 @@ public class ChatClient {
         }
     }
 
-    public void sendMessage(ChatMessage message) {
-        try {
-            String jsonMsg = gson.toJson(message);
-
-            writer.write(jsonMsg);
-            writer.newLine();
-            writer.flush();
-        } catch (IOException e) {
-            System.out.println("Error while sending message");
-            closeConnection();
-        }
-    }
-
-    public void closeConnection(){
-        //Make sure the connection hasn't already been closed
-        if(closedConnection.getAndSet(true)) return;
-
-        try {
-            if(socket != null) socket.close();
-            if(writer != null) writer.close();
-            if(reader != null) reader.close();
-
-            System.out.println("Connection closed");
-        } catch (IOException e) {
-            System.out.println("Error while closing connection");
-        }
-    }
 }
