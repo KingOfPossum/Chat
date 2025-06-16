@@ -49,7 +49,9 @@ public class ChatClient {
 
     private void setConnectionStatus(ConnectionStatus connectionStatus) {
         this.connectionStatus = connectionStatus;
-        this.connectionStatusListener.onConnectionStatusChanged(connectionStatus);
+        if(connectionStatusListener != null) {
+            this.connectionStatusListener.onConnectionStatusChanged(connectionStatus);
+        }
     }
 
     public void start() {
