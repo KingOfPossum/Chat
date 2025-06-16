@@ -1,5 +1,7 @@
 package main.Client;
 
+import main.Connections.ConnectionStatus;
+
 import java.util.Scanner;
 
 public class ClientMain {
@@ -17,17 +19,19 @@ public class ClientMain {
         client = new ChatClient(serverIP,port);
         client.start();
 
-        ChatMessage initMessage = new ChatMessage(userName,"Init");
-        client.sendMessage(initMessage);
+        if(client.getConnectionStatus().equals(ConnectionStatus.CONNECTED)){
+            ChatMessage initMessage = new ChatMessage(userName,"Init");
+            client.sendMessage(initMessage);
 
-        client.setMessageListener((sender,chatMessage) -> {
-            if(chatMessage.userName() == null) {
-                return;
-            }
-            System.out.println(chatMessage.userName() + " : " + chatMessage.message());
-        });
+            client.setMessageListener((sender,chatMessage) -> {
+                if(chatMessage.userName() == null) {
+                    return;
+                }
+                System.out.println(chatMessage.userName() + " : " + chatMessage.message());
+            });
 
-        receiveUserInput();
+            receiveUserInput();
+        }
     }
 
     private static void setUserName() {
