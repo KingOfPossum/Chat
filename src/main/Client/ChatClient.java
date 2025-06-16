@@ -138,10 +138,13 @@ public class ChatClient {
             String message;
             while((message = reader.readLine()) != null)
             {
-                if(messageListener != null) {
+                try {
                     ChatMessage chatMessage = gson.fromJson(message,ChatMessage.class);
-
-                    messageListener.onMessageReceived(null,chatMessage);
+                    if(messageListener != null) {
+                        messageListener.onMessageReceived(null,chatMessage);
+                    }
+                } catch (Exception e) {
+                    System.out.println("Failed to parse message : " + e.getMessage());
                 }
             }
         } catch (IOException e) {
