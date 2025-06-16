@@ -37,10 +37,16 @@ public class ChatClient {
         this.maxConnectionAttempts = maxConnectionAttempts;
     }
 
+    public ConnectionStatus getConnectionStatus() {
+        return connectionStatus;
+    }
+
     public void start() {
         connect();
 
-        startListening();
+        if(connectionStatus.equals(ConnectionStatus.CONNECTED)) {
+            startListening();
+        }
     }
 
     public void sendMessage(ChatMessage message) {
