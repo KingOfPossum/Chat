@@ -22,7 +22,7 @@ public class ChatClient {
     private AtomicBoolean closedConnection = new AtomicBoolean(false);
     private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
 
-    private int maxTriesToConnect = 10;
+    private int maxConnectionAttempts = 10;
 
     public ChatClient(String serverIP,int port) {
         this.serverIP = serverIP;
@@ -33,8 +33,8 @@ public class ChatClient {
         this.messageListener = messageListener;
     }
 
-    public void setMaxTriesToConnect(int maxTriesToConnect) {
-        this.maxTriesToConnect = maxTriesToConnect;
+    public void setMaxConnectionAttempts(int maxConnectionAttempts) {
+        this.maxConnectionAttempts = maxConnectionAttempts;
     }
 
     public void start() {
@@ -91,7 +91,9 @@ public class ChatClient {
 
     private void connect() {
         try {
-            connectToServer();
+            if(!connectToServer()) {
+                return;
+            }
         } catch (InterruptedException e) {
             System.out.println(e.getMessage());
         }
@@ -106,26 +108,23 @@ public class ChatClient {
         }
     }
 
-    private void connectToServer() throws InterruptedException {
-        int connectionTries = 0;
+    private boolean connectToServer() throws InterruptedException {
+        int connectionAttempts = 0;
 
-        while(true) {
+        while(connectionAttempts < maxConnectionAttempts) {
             try {
-                if(connectionTries < maxTriesToConnect){
-                    socket = new Socket(serverIP, port);
-                    System.out.println("Connected to " + socket.getInetAddress().toString());
-                    break;
-                }
-                else {
-                    System.out.println("Creating connection failed!");
-                    return;
-                }
+                socket = new Socket(serverIP, port);
+                System.out.println("Connected to " + socket.getInetAddress().toString());
+                return true;
             } catch(IOException e) {
                 System.out.println("Could not connect to server will try again in 1 second ...");
-                connectionTries++;
+                connectionAttempts++;
                 Thread.sleep(1000);
             }
         }
+
+        System.out.println("Creating connection failed due to max connection attempts reached!");
+        return false;
     }
 
     private void startListening() {
