@@ -1,6 +1,6 @@
 package main.Client;
 
-import main.ConnectionStatus;
+import main.Connections.ConnectionStatus;
 
 import java.util.Scanner;
 
