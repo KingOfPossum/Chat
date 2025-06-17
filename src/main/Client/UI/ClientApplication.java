@@ -13,6 +13,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import main.Client.ChatClient;
 import main.Client.ChatMessage;
+import main.Connections.ConnectionListener;
 import main.Connections.ConnectionStatus;
 
 import java.util.Optional;
@@ -61,8 +62,7 @@ public class ClientApplication extends Application {
                 }
             }
             // Initialization message to send the clients userName to the server
-            ChatMessage initMessage = new ChatMessage(userName,"Init");
-            client.sendMessage(initMessage);
+            sendInitMessage();
         });
 
         serverClientThread.start();
@@ -89,6 +89,11 @@ public class ClientApplication extends Application {
 
     }
 
+    private void sendInitMessage() {
+        ChatMessage initMessage = new ChatMessage(userName,"Init");
+        client.sendMessage(initMessage);
+    }
+
     public Scene createScene() {
         // Main Container
         HBox hBox = new HBox();
@@ -106,7 +111,7 @@ public class ClientApplication extends Application {
         textArea.setEditable(false);
         textArea.setWrapText(true);
 
-        Text connectionStatusTxt = new Text("Disconnected...");
+        Text connectionStatusTxt = new Text(client.getConnectionStatus().toString());
 
         // Input field for sending messages
         TextField inputField = new TextField();
@@ -143,8 +148,21 @@ public class ClientApplication extends Application {
             }
         });
 
-        client.setConnectionStatusListener((status)->{
-            connectionStatusTxt.setText(status.toString());
+        client.setConnectionListener(new ConnectionListener() {
+            @Override
+            public void onConnected(){
+                sendInitMessage();
+            }
+
+            @Override
+            public void onDisconnected() {
+                System.out.println("Disconnected");
+            }
+
+            @Override
+            public void onConnectionStatusChanged(ConnectionStatus previousStatus, ConnectionStatus currentStatus) {
+                connectionStatusTxt.setText(currentStatus.name());
+            }
         });
 
         Scene scene = new Scene(hBox,950,700);

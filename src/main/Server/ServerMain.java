@@ -7,6 +7,7 @@ public class ServerMain {
         ChatServer server = new ChatServer(port);
 
         server.setMessageListener((sender,msg) -> {
+            System.out.println(msg.message());
             if(msg.message().equals("Init")) {
                 server.setClientUsername(sender,msg.userName());
             }

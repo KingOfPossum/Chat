@@ -4,8 +4,8 @@ import java.io.*;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
 import com.google.gson.Gson;
+import main.Connections.ConnectionListener;
 import main.Connections.ConnectionStatus;
-import main.Connections.ConnectionStatusListener;
 
 public class ChatClient {
     private final int port;
@@ -19,7 +19,7 @@ public class ChatClient {
     private BufferedReader reader;
 
     private MessageListener messageListener;
-    private ConnectionStatusListener connectionStatusListener;
+    private ConnectionListener connectionListener;
 
     private final AtomicBoolean closedConnection = new AtomicBoolean(false);
     private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
@@ -35,8 +35,8 @@ public class ChatClient {
         this.messageListener = messageListener;
     }
 
-    public void setConnectionStatusListener(ConnectionStatusListener connectionStatusListener) {
-        this.connectionStatusListener = connectionStatusListener;
+    public void setConnectionListener(ConnectionListener connectionListener) {
+        this.connectionListener = connectionListener;
     }
 
     public void setMaxConnectionAttempts(int maxConnectionAttempts) {
@@ -47,11 +47,11 @@ public class ChatClient {
         return connectionStatus;
     }
 
-    private void setConnectionStatus(ConnectionStatus connectionStatus) {
-        this.connectionStatus = connectionStatus;
-        if(connectionStatusListener != null) {
-            this.connectionStatusListener.onConnectionStatusChanged(connectionStatus);
+    private void setConnectionStatus(ConnectionStatus newConnectionStatus) {
+        if(connectionListener != null) {
+            this.connectionListener.onConnectionStatusChanged(this.connectionStatus,newConnectionStatus);
         }
+        this.connectionStatus = newConnectionStatus;
     }
 
     public void start() {
@@ -91,6 +91,10 @@ public class ChatClient {
             setConnectionStatus(ConnectionStatus.DISCONNECTED);
 
             System.out.println("Connection closed");
+
+            if(connectionListener != null) {
+                connectionListener.onDisconnected();
+            }
         } catch (IOException e) {
             System.out.println("Error while closing connection");
         }
@@ -132,6 +136,9 @@ public class ChatClient {
                 System.out.println("Writer or reader is null - connection failed");
             }
 
+            if(connectionListener != null) {
+                connectionListener.onConnected();
+            }
         } catch(IOException e) {
             System.out.println("Error while getting Output or Input Stream of socket : " + e.getMessage());
         }
