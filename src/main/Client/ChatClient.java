@@ -63,7 +63,7 @@ public class ChatClient {
     }
 
     public void sendMessage(ChatMessage message) {
-        if(connectionStatus.equals(ConnectionStatus.RECONNECTING)) {
+        if(!connectionStatus.equals(ConnectionStatus.CONNECTED)) {
             return;
         }
 
@@ -109,6 +109,10 @@ public class ChatClient {
     }
 
     private void connect() {
+        if(!connectionStatus.equals(ConnectionStatus.RECONNECTING)) {
+            setConnectionStatus(ConnectionStatus.CONNECTING);
+        }
+
         try {
             if(!connectToServer()) {
                 return;
