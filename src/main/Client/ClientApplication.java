@@ -1,4 +1,4 @@
-package main.Client.UI;
+package main.Client;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -11,10 +11,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import main.Client.ChatClient;
-import main.Client.ChatMessage;
-import main.Connections.ConnectionListener;
-import main.Connections.ConnectionStatus;
+import main.Common.Connections.ConnectionListener;
+import main.Common.Connections.ConnectionStatus;
+import main.Common.Messages.ChatMessage;
 
 import java.util.Optional;
 

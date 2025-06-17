@@ -1,6 +1,7 @@
 package main.Client;
 
-import main.Connections.ConnectionStatus;
+import main.Common.Connections.ConnectionStatus;
+import main.Common.Messages.ChatMessage;
 
 import java.util.Scanner;
 

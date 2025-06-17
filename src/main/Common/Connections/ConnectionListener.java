@@ -1,4 +1,4 @@
-package main.Connections;
+package main.Common.Connections;
 
 public interface ConnectionListener {
     void onConnected();

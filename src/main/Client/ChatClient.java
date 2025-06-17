@@ -4,8 +4,10 @@ import java.io.*;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
 import com.google.gson.Gson;
-import main.Connections.ConnectionListener;
-import main.Connections.ConnectionStatus;
+import main.Common.Connections.ConnectionListener;
+import main.Common.Connections.ConnectionStatus;
+import main.Common.Messages.ChatMessage;
+import main.Common.Messages.MessageListener;
 
 public class ChatClient {
     private final int port;
