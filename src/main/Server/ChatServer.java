@@ -1,8 +1,8 @@
 package main.Server;
 
 import com.google.gson.Gson;
-import main.Client.ChatMessage;
-import main.Client.MessageListener;
+import main.Common.Messages.ChatMessage;
+import main.Common.Messages.MessageListener;
 
 import java.io.*;
 import java.net.ServerSocket;

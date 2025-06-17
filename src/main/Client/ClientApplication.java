@@ -1,4 +1,4 @@
-package main.Client.UI;
+package main.Client;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -9,11 +9,12 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import main.Client.ChatClient;
-import main.Client.ChatMessage;
+import main.Common.Connections.ConnectionListener;
+import main.Common.Connections.ConnectionStatus;
+import main.Common.Messages.ChatMessage;
 
-import java.util.Arrays;
 import java.util.Optional;
 
 public class ClientApplication extends Application {
@@ -52,9 +53,15 @@ public class ClientApplication extends Application {
             client = new ChatClient("0.0.0.0",12345);
             client.start();
 
+            while(!client.getConnectionStatus().equals(ConnectionStatus.CONNECTED)) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             // Initialization message to send the clients userName to the server
-            ChatMessage initMessage = new ChatMessage(userName,"Init");
-            client.sendMessage(initMessage);
+            sendInitMessage();
         });
 
         serverClientThread.start();
@@ -81,6 +88,11 @@ public class ClientApplication extends Application {
 
     }
 
+    private void sendInitMessage() {
+        ChatMessage initMessage = new ChatMessage(userName,"Init");
+        client.sendMessage(initMessage);
+    }
+
     public Scene createScene() {
         // Main Container
         HBox hBox = new HBox();
@@ -98,6 +110,8 @@ public class ClientApplication extends Application {
         textArea.setEditable(false);
         textArea.setWrapText(true);
 
+        Text connectionStatusTxt = new Text(client.getConnectionStatus().toString());
+
         // Input field for sending messages
         TextField inputField = new TextField();
         inputField.setPrefSize(350,70);
@@ -107,7 +121,7 @@ public class ClientApplication extends Application {
         clientsField.setPrefSize(100,400);
         clientsField.setEditable(false);
 
-        vBox.getChildren().addAll(textArea, inputField);
+        vBox.getChildren().addAll(textArea, connectionStatusTxt,inputField);
         hBox.getChildren().addAll(vBox, clientsField);
 
         inputField.setOnAction(event -> {
@@ -130,6 +144,23 @@ public class ClientApplication extends Application {
             }
             else {
                 textArea.setText(textArea.getText() + "\n" + chatMessage.userName() + " : " + chatMessage.message() + "\n");
+            }
+        });
+
+        client.setConnectionListener(new ConnectionListener() {
+            @Override
+            public void onConnected(){
+                sendInitMessage();
+            }
+
+            @Override
+            public void onDisconnected() {
+                System.out.println("Disconnected");
+            }
+
+            @Override
+            public void onConnectionStatusChanged(ConnectionStatus previousStatus, ConnectionStatus currentStatus) {
+                connectionStatusTxt.setText(currentStatus.name());
             }
         });
 
