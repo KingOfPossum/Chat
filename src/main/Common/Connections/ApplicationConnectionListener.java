@@ -5,15 +5,15 @@ import main.Client.ClientApplication;
 
 public class ApplicationConnectionListener implements ConnectionListener {
 
-    private ClientApplication app;
+    private final ClientApplication clientApp;
 
-    public ApplicationConnectionListener(ClientApplication application) {
-        app = application;
+    public ApplicationConnectionListener(ClientApplication clientApp) {
+        clientApp = clientApp;
     }
 
     @Override
     public void onConnect() {
-        Platform.runLater(() -> app.initClient());
+        Platform.runLater(clientApp::initClient);
     }
 
     @Override
@@ -28,7 +28,7 @@ public class ApplicationConnectionListener implements ConnectionListener {
 
     @Override
     public void onConnectionStatusChange(ConnectionStatus previousStatus, ConnectionStatus currentStatus) {
-        Platform.runLater(() -> app.updateConnectionStatus(currentStatus));
+        Platform.runLater(() -> clientApp.updateConnectionStatus(currentStatus));
     }
 
     @Override

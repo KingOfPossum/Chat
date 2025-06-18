@@ -15,6 +15,7 @@ import javafx.stage.Stage;
 import main.Common.Connections.ApplicationConnectionListener;
 import main.Common.Connections.ConnectionListener;
 import main.Common.Connections.ConnectionStatus;
+import main.Common.Messages.ApplicationMessageListener;
 import main.Common.Messages.ChatMessage;
 
 import java.util.Optional;
@@ -62,19 +63,7 @@ public class ClientApplication extends Application {
         Thread serverClientThread = new Thread(() -> {
             client = new ChatClient(SERVER_IP,SERVER_PORT);
 
-            client.setMessageListener((sender,chatMessage) -> {
-                if(chatMessage.userName() == null) {
-                    System.out.println(chatMessage.message());
-                    String msg = chatMessage.message().replaceAll("([\\[\\] ])","");
-                    String[] splitMsg = msg.split(",");
-
-                    Platform.runLater(() -> clientsField.setText(String.join("\n", splitMsg)));
-                }
-                else {
-                    Platform.runLater(() -> textArea.appendText(chatMessage.userName() + " : " + chatMessage.message() + "\n"));
-                }
-            });
-
+            client.setMessageListener(new ApplicationMessageListener(this));
             client.setConnectionListener(new ApplicationConnectionListener(this));
 
             client.start();
@@ -89,6 +78,14 @@ public class ClientApplication extends Application {
 
     public void updateConnectionStatus(ConnectionStatus status) {
         connectionStatusTxt.setText(status.toString());
+    }
+
+    public void updateClientsField(String[] clients) {
+        clientsField.setText(String.join("\n", clients));
+    }
+
+    public void updateTextArea(String message,String userName) {
+        textArea.appendText(userName + " : " + message + "\n");
     }
 
     private void sendInitMessage() {
