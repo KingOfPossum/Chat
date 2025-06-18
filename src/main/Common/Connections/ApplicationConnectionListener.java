@@ -8,7 +8,7 @@ public class ApplicationConnectionListener implements ConnectionListener {
     private final ClientApplication clientApp;
 
     public ApplicationConnectionListener(ClientApplication clientApp) {
-        clientApp = clientApp;
+        this.clientApp = clientApp;
     }
 
     @Override

@@ -103,7 +103,7 @@ public class ClientApplication extends Application {
     }
 
     private boolean validateUserName(Optional<String> username) {
-        if(username.isEmpty()) {
+        if(!username.isPresent() || username.get().isEmpty()) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setHeaderText("No username entered!");
