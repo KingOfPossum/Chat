@@ -12,69 +12,40 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import main.Common.Connections.ApplicationConnectionListener;
 import main.Common.Connections.ConnectionListener;
 import main.Common.Connections.ConnectionStatus;
+import main.Common.Messages.ApplicationMessageListener;
 import main.Common.Messages.ChatMessage;
 
 import java.util.Optional;
 
 public class ClientApplication extends Application {
+    private final int SERVER_PORT = 12345;
+    private final String SERVER_IP = "0.0.0.0";
 
     private Stage mainStage;
     private ChatClient client;
     private String userName;
 
+    private Text connectionStatusTxt;
+    private TextArea clientsField;
+    private TextArea textArea;
+
     @Override
     public void start(Stage stage) {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Choose Username");
-        dialog.setHeaderText("Enter your username: ");
-        dialog.setContentText("Username: ");
+        Optional<String> newUsername = showUserNameDialog();
 
-        Optional<String> newUsername = dialog.showAndWait();
-
-        boolean success;
-        if(!newUsername.isPresent() || newUsername.get().equals("")) {
-            success = false;
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("No username entered!");
-            alert.showAndWait();
-        } else {
-            System.out.println("name : " + newUsername.get() + ";");
-            success = true;
-            this.userName = newUsername.get();
-        }
-
-        if(!success) {
+        if(!validateUserName(newUsername)) {
             return;
         }
 
-        Thread serverClientThread = new Thread(() -> {
-            client = new ChatClient("0.0.0.0",12345);
-            client.start();
+        createGUI(stage);
 
-            while(!client.getConnectionStatus().equals(ConnectionStatus.CONNECTED)) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            // Initialization message to send the clients userName to the server
-            sendInitMessage();
-        });
+        startClient();
+    }
 
-        serverClientThread.start();
-
-        // Make sure the client has started
-        //TODO replace with better solution
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
+    private void createGUI(Stage stage) {
         mainStage = stage;
 
         mainStage.setTitle("Client Application");
@@ -86,12 +57,63 @@ public class ClientApplication extends Application {
 
         mainStage.setScene(createScene());
         mainStage.show();
+    }
 
+    private void startClient() {
+        Thread serverClientThread = new Thread(() -> {
+            client = new ChatClient(SERVER_IP,SERVER_PORT);
+
+            client.setMessageListener(new ApplicationMessageListener(this));
+            client.setConnectionListener(new ApplicationConnectionListener(this));
+
+            client.start();
+        });
+
+        serverClientThread.start();
+    }
+
+    public void initClient() {
+        sendInitMessage();
+    }
+
+    public void updateConnectionStatus(ConnectionStatus status) {
+        connectionStatusTxt.setText(status.toString());
+    }
+
+    public void updateClientsField(String[] clients) {
+        clientsField.setText(String.join("\n", clients));
+    }
+
+    public void updateTextArea(String message,String userName) {
+        textArea.appendText(userName + " : " + message + "\n");
     }
 
     private void sendInitMessage() {
         ChatMessage initMessage = new ChatMessage(userName,"Init");
         client.sendMessage(initMessage);
+    }
+
+    private Optional<String> showUserNameDialog() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Choose Username");
+        dialog.setHeaderText("Enter your username: ");
+        dialog.setContentText("Username: ");
+
+        return dialog.showAndWait();
+    }
+
+    private boolean validateUserName(Optional<String> username) {
+        if(!username.isPresent() || username.get().isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("No username entered!");
+            alert.showAndWait();
+            return false;
+        } else {
+            System.out.println("name : " + username.get() + ";");
+            this.userName = username.get().trim();
+            return true;
+        }
     }
 
     public Scene createScene() {
@@ -106,19 +128,19 @@ public class ClientApplication extends Application {
         vBox.setPrefSize(350, 300);
 
         // TextArea for incoming chat messages
-        TextArea textArea = new TextArea();
+        textArea = new TextArea();
         textArea.setPrefSize(350,350);
         textArea.setEditable(false);
         textArea.setWrapText(true);
 
-        Text connectionStatusTxt = new Text(client.getConnectionStatus().toString());
+        connectionStatusTxt = new Text("");
 
         // Input field for sending messages
         TextField inputField = new TextField();
         inputField.setPrefSize(350,70);
 
         // TextArea to list all connected clients
-        TextArea clientsField = new TextArea();
+        clientsField = new TextArea();
         clientsField.setPrefSize(100,400);
         clientsField.setEditable(false);
 
@@ -135,46 +157,6 @@ public class ClientApplication extends Application {
                 textArea.appendText(chatMessage.userName() + " : " + chatMessage.message() + "\n");
                 inputField.setText("");
             });
-        });
-
-        client.setMessageListener((sender,chatMessage) -> {
-            if(chatMessage.userName() == null) {
-                System.out.println(chatMessage.message());
-                String msg = chatMessage.message().replaceAll("([\\[\\] ])","");;
-                String[] splitMsg = msg.split(",");
-
-                Platform.runLater(() -> clientsField.setText(String.join("\n", String.join("\n", splitMsg))));
-            }
-            else {
-                Platform.runLater(() -> textArea.appendText(chatMessage.userName() + " : " + chatMessage.message() + "\n"));
-            }
-        });
-
-        client.setConnectionListener(new ConnectionListener() {
-            @Override
-            public void onConnect(){
-                Platform.runLater(() -> sendInitMessage());
-            }
-
-            @Override
-            public void onReconnect() {
-                System.out.println("Reconnected");
-            }
-
-            @Override
-            public void onDisconnect() {
-                System.out.println("Disconnected");
-            }
-
-            @Override
-            public void onConnectionStatusChange(ConnectionStatus previousStatus, ConnectionStatus currentStatus) {
-                Platform.runLater(() -> connectionStatusTxt.setText(currentStatus.name()));
-            }
-
-            @Override
-            public void onConnectionFailed() {
-                System.out.println("Connection failed");
-            }
         });
 
         Scene scene = new Scene(hBox,950,700);

@@ -1,0 +1,38 @@
+package main.Common.Connections;
+
+import javafx.application.Platform;
+import main.Client.ClientApplication;
+
+public class ApplicationConnectionListener implements ConnectionListener {
+
+    private final ClientApplication clientApp;
+
+    public ApplicationConnectionListener(ClientApplication clientApp) {
+        this.clientApp = clientApp;
+    }
+
+    @Override
+    public void onConnect() {
+        Platform.runLater(clientApp::initClient);
+    }
+
+    @Override
+    public void onReconnect() {
+        System.out.println("Reconnected");
+    }
+
+    @Override
+    public void onDisconnect() {
+        System.out.println("Disconnected");
+    }
+
+    @Override
+    public void onConnectionStatusChange(ConnectionStatus previousStatus, ConnectionStatus currentStatus) {
+        Platform.runLater(() -> clientApp.updateConnectionStatus(currentStatus));
+    }
+
+    @Override
+    public void onConnectionFailed() {
+        System.out.println("Connection failed");
+    }
+}
