@@ -12,6 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import main.Common.Connections.ApplicationConnectionListener;
 import main.Common.Connections.ConnectionListener;
 import main.Common.Connections.ConnectionStatus;
 import main.Common.Messages.ChatMessage;
@@ -19,6 +20,8 @@ import main.Common.Messages.ChatMessage;
 import java.util.Optional;
 
 public class ClientApplication extends Application {
+    private final int SERVER_PORT = 12345;
+    private final String SERVER_IP = "0.0.0.0";
 
     private Stage mainStage;
     private ChatClient client;
@@ -57,7 +60,7 @@ public class ClientApplication extends Application {
 
     private void startClient() {
         Thread serverClientThread = new Thread(() -> {
-            client = new ChatClient("0.0.0.0",12345);
+            client = new ChatClient(SERVER_IP,SERVER_PORT);
 
             client.setMessageListener((sender,chatMessage) -> {
                 if(chatMessage.userName() == null) {
@@ -72,37 +75,20 @@ public class ClientApplication extends Application {
                 }
             });
 
-            client.setConnectionListener(new ConnectionListener() {
-                @Override
-                public void onConnect(){
-                    Platform.runLater(() -> sendInitMessage());
-                }
-
-                @Override
-                public void onReconnect() {
-                    System.out.println("Reconnected");
-                }
-
-                @Override
-                public void onDisconnect() {
-                    System.out.println("Disconnected");
-                }
-
-                @Override
-                public void onConnectionStatusChange(ConnectionStatus previousStatus, ConnectionStatus currentStatus) {
-                    Platform.runLater(() -> connectionStatusTxt.setText(currentStatus.name()));
-                }
-
-                @Override
-                public void onConnectionFailed() {
-                    System.out.println("Connection failed");
-                }
-            });
+            client.setConnectionListener(new ApplicationConnectionListener(this));
 
             client.start();
         });
 
         serverClientThread.start();
+    }
+
+    public void initClient() {
+        sendInitMessage();
+    }
+
+    public void updateConnectionStatus(ConnectionStatus status) {
+        connectionStatusTxt.setText(status.toString());
     }
 
     private void sendInitMessage() {
