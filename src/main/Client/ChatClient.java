@@ -51,7 +51,7 @@ public class ChatClient {
 
     private void setConnectionStatus(ConnectionStatus newConnectionStatus) {
         if(connectionListener != null) {
-            this.connectionListener.onConnectionStatusChanged(this.connectionStatus,newConnectionStatus);
+            this.connectionListener.onConnectionStatusChange(this.connectionStatus,newConnectionStatus);
         }
         this.connectionStatus = newConnectionStatus;
     }
@@ -95,7 +95,7 @@ public class ChatClient {
             System.out.println("Connection closed");
 
             if(connectionListener != null) {
-                connectionListener.onDisconnected();
+                connectionListener.onDisconnect();
             }
         } catch (IOException e) {
             System.out.println("Error while closing connection");
@@ -111,6 +111,10 @@ public class ChatClient {
             closedConnection.set(false);
             connect();
             startListening();
+
+            if(connectionListener != null){
+                connectionListener.onReconnect();
+            }
         }
     }
 
@@ -138,8 +142,8 @@ public class ChatClient {
                 System.out.println("Writer or reader is null - connection failed");
             }
 
-            if(connectionListener != null) {
-                connectionListener.onConnected();
+            if(connectionListener != null && !connectionStatus.equals(ConnectionStatus.RECONNECTING)) {
+                connectionListener.onConnect();
             }
         } catch(IOException e) {
             System.out.println("Error while getting Output or Input Stream of socket : " + e.getMessage());

@@ -1,6 +1,7 @@
 package main.Client;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -130,8 +131,10 @@ public class ClientApplication extends Application {
             ChatMessage chatMessage = new ChatMessage(userName,input);
 
             client.sendMessage(chatMessage);
-            textArea.setText(textArea.getText() + "\n" + chatMessage.userName() + " : " + chatMessage.message() + "\n");
-            inputField.setText("");
+            Platform.runLater(() -> {
+                textArea.appendText(chatMessage.userName() + " : " + chatMessage.message() + "\n");
+                inputField.setText("");
+            });
         });
 
         client.setMessageListener((sender,chatMessage) -> {
@@ -140,27 +143,37 @@ public class ClientApplication extends Application {
                 String msg = chatMessage.message().replaceAll("([\\[\\] ])","");;
                 String[] splitMsg = msg.split(",");
 
-                clientsField.setText(String.join("\n", String.join("\n", splitMsg)));
+                Platform.runLater(() -> clientsField.setText(String.join("\n", String.join("\n", splitMsg))));
             }
             else {
-                textArea.setText(textArea.getText() + "\n" + chatMessage.userName() + " : " + chatMessage.message() + "\n");
+                Platform.runLater(() -> textArea.appendText(chatMessage.userName() + " : " + chatMessage.message() + "\n"));
             }
         });
 
         client.setConnectionListener(new ConnectionListener() {
             @Override
-            public void onConnected(){
-                sendInitMessage();
+            public void onConnect(){
+                Platform.runLater(() -> sendInitMessage());
             }
 
             @Override
-            public void onDisconnected() {
+            public void onReconnect() {
+                System.out.println("Reconnected");
+            }
+
+            @Override
+            public void onDisconnect() {
                 System.out.println("Disconnected");
             }
 
             @Override
-            public void onConnectionStatusChanged(ConnectionStatus previousStatus, ConnectionStatus currentStatus) {
-                connectionStatusTxt.setText(currentStatus.name());
+            public void onConnectionStatusChange(ConnectionStatus previousStatus, ConnectionStatus currentStatus) {
+                Platform.runLater(() -> connectionStatusTxt.setText(currentStatus.name()));
+            }
+
+            @Override
+            public void onConnectionFailed() {
+                System.out.println("Connection failed");
             }
         });
 
