@@ -165,6 +165,9 @@ public class ChatClient {
             }
         }
 
+        if(connectionListener != null) {
+            connectionListener.onConnectionFailed();
+        }
         System.out.println("Creating connection failed due to max connection attempts reached!");
         return false;
     }
