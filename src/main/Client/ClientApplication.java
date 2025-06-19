@@ -13,10 +13,10 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import main.Common.Connections.ApplicationConnectionListener;
-import main.Common.Connections.ConnectionListener;
 import main.Common.Connections.ConnectionStatus;
 import main.Common.Messages.ApplicationMessageListener;
 import main.Common.Messages.ChatMessage;
+import main.Common.TimeUtils;
 
 import java.util.Optional;
 
@@ -89,7 +89,7 @@ public class ClientApplication extends Application {
     }
 
     private void sendInitMessage() {
-        ChatMessage initMessage = new ChatMessage(userName,"Init");
+        ChatMessage initMessage = new ChatMessage(userName,"Init", TimeUtils.currentTimestamp());
         client.sendMessage(initMessage);
     }
 
@@ -150,7 +150,7 @@ public class ClientApplication extends Application {
         inputField.setOnAction(event -> {
             String input = inputField.getText();
 
-            ChatMessage chatMessage = new ChatMessage(userName,input);
+            ChatMessage chatMessage = new ChatMessage(userName,input,TimeUtils.currentTimestamp());
 
             client.sendMessage(chatMessage);
             Platform.runLater(() -> {

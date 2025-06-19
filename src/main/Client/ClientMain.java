@@ -2,12 +2,13 @@ package main.Client;
 
 import main.Common.Connections.ConnectionStatus;
 import main.Common.Messages.ChatMessage;
+import main.Common.TimeUtils;
 
 import java.util.Scanner;
 
 public class ClientMain {
-    private static final String serverIP = "0.0.0.0";
-    private static final int port = 12345;
+    private static final String SERVER_IP = "0.0.0.0";
+    private static final int PORT = 12345;
 
     private static ChatClient client;
 
@@ -17,11 +18,11 @@ public class ClientMain {
     public static void main(String[] args) {
         setUserName();
 
-        client = new ChatClient(serverIP,port);
+        client = new ChatClient(SERVER_IP, PORT);
         client.start();
 
         if(client.getConnectionStatus().equals(ConnectionStatus.CONNECTED)){
-            ChatMessage initMessage = new ChatMessage(userName,"Init");
+            ChatMessage initMessage = new ChatMessage(userName,"Init", TimeUtils.currentTimestamp());
             client.sendMessage(initMessage);
 
             client.setMessageListener((sender,chatMessage) -> {
@@ -49,7 +50,7 @@ public class ClientMain {
                     return;
                 }
 
-                ChatMessage chatMessage = new ChatMessage(userName,message);
+                ChatMessage chatMessage = new ChatMessage(userName,message,TimeUtils.currentTimestamp());
 
                 client.sendMessage(chatMessage);
             }

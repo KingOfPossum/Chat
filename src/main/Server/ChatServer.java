@@ -3,6 +3,7 @@ package main.Server;
 import com.google.gson.Gson;
 import main.Common.Messages.ChatMessage;
 import main.Common.Messages.MessageListener;
+import main.Common.TimeUtils;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -10,7 +11,7 @@ import java.net.Socket;
 import java.util.*;
 
 public class ChatServer {
-    private final int port;
+    private final int PORT;
 
     private final List<Socket> clients = Collections.synchronizedList(new ArrayList<Socket>());
     private final Map<Socket,String> clientToUsername = new HashMap<>();
@@ -25,12 +26,12 @@ public class ChatServer {
     private final int loggingInterval = 5000;
 
     public ChatServer(int port) {
-        this.port = port;
+        this.PORT = port;
     }
 
     public void start() {
         try {
-            serverSocket = new ServerSocket(port);
+            serverSocket = new ServerSocket(PORT);
         } catch (IOException e) {
             System.out.println("Starting server failed : " + e.getMessage());
         }
@@ -79,7 +80,7 @@ public class ChatServer {
         while (true) {
             System.out.println("Connected Clients : " + Arrays.toString(clientToUsername.values().toArray()));
 
-            ChatMessage connectedClientsMsg = new ChatMessage(null,Arrays.toString(clientToUsername.values().toArray()));
+            ChatMessage connectedClientsMsg = new ChatMessage(null,Arrays.toString(clientToUsername.values().toArray()), TimeUtils.currentTimestamp());
             broadcast(null,connectedClientsMsg);
             try {
                 Thread.sleep(loggingInterval);
