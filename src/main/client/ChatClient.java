@@ -1,13 +1,13 @@
-package main.Client;
+package main.client;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
 import com.google.gson.Gson;
-import main.Common.Connections.ConnectionListener;
-import main.Common.Connections.ConnectionStatus;
-import main.Common.Messages.ChatMessage;
-import main.Common.Messages.MessageListener;
+import main.common.connections.ConnectionListener;
+import main.common.connections.ConnectionStatus;
+import main.common.messages.ChatMessage;
+import main.common.messages.MessageListener;
 
 public class ChatClient {
     private final int port;

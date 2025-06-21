@@ -1,9 +1,9 @@
-package main.Server;
+package main.server;
 
 import com.google.gson.Gson;
-import main.Common.Messages.ChatMessage;
-import main.Common.Messages.MessageListener;
-import main.Common.TimeUtils;
+import main.common.messages.ChatMessage;
+import main.common.messages.MessageListener;
+import main.common.TimeUtils;
 
 import java.io.*;
 import java.net.ServerSocket;

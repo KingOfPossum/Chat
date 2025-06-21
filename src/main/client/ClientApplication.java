@@ -1,4 +1,4 @@
-package main.Client;
+package main.client;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -12,11 +12,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import main.Common.Connections.ApplicationConnectionListener;
-import main.Common.Connections.ConnectionStatus;
-import main.Common.Messages.ApplicationMessageListener;
-import main.Common.Messages.ChatMessage;
-import main.Common.TimeUtils;
+import main.common.connections.ApplicationConnectionListener;
+import main.common.connections.ConnectionStatus;
+import main.common.messages.ApplicationMessageListener;
+import main.common.messages.ChatMessage;
+import main.common.TimeUtils;
 
 import java.util.Optional;
 

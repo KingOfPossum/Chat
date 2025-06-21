@@ -1,7 +1,7 @@
-package main.Common.Connections;
+package main.common.connections;
 
 import javafx.application.Platform;
-import main.Client.ClientApplication;
+import main.client.ClientApplication;
 
 public class ApplicationConnectionListener implements ConnectionListener {
 

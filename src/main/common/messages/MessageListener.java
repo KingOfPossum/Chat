@@ -1,4 +1,4 @@
-package main.Common.Messages;
+package main.common.messages;
 
 import java.net.Socket;
 

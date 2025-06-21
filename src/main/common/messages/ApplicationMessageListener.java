@@ -1,7 +1,7 @@
-package main.Common.Messages;
+package main.common.messages;
 
 import javafx.application.Platform;
-import main.Client.ClientApplication;
+import main.client.ClientApplication;
 
 import java.net.Socket;
 

@@ -1,8 +1,8 @@
-package main.Client;
+package main.client;
 
-import main.Common.Connections.ConnectionStatus;
-import main.Common.Messages.ChatMessage;
-import main.Common.TimeUtils;
+import main.common.connections.ConnectionStatus;
+import main.common.messages.ChatMessage;
+import main.common.TimeUtils;
 
 import java.util.Scanner;
 

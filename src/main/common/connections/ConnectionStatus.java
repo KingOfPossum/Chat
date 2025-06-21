@@ -1,4 +1,4 @@
-package main.Common.Connections;
+package main.common.connections;
 
 public enum ConnectionStatus {
     CONNECTED,

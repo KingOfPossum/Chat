@@ -1,9 +1,19 @@
-package main.Server;
+package main.server;
+
+import main.common.messages.MessageHistoryHandler;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class ServerMain {
     private static final int PORT = 12345;
 
+    private static MessageHistoryHandler messageHistoryHandler;
+
     public static void main(String[] args) {
+        Path messageHistoryPath = Paths.get("src","main","common","messages","messageHistory.json");
+        messageHistoryHandler = new MessageHistoryHandler(messageHistoryPath);
+
         ChatServer server = new ChatServer(PORT);
 
         server.setMessageListener((sender,msg) -> {
@@ -12,6 +22,7 @@ public class ServerMain {
             }
             else {
                 System.out.println(sender + " : " + msg.message() + "(" + msg.timestamp() + ")");
+                messageHistoryHandler.addMessage(msg);
                 server.broadcast(sender,msg);
             }
         });
