@@ -1,5 +1,6 @@
 package main.server;
 
+import main.common.connections.ServerConnectionListener;
 import main.common.messages.MessageHistoryHandler;
 
 import java.nio.file.Path;
@@ -8,7 +9,7 @@ import java.nio.file.Paths;
 public class ServerMain {
     private static final int PORT = 12345;
 
-    private static MessageHistoryHandler messageHistoryHandler;
+    private static MessageHistoryHandler messageHistoryHandler;;
 
     public static void main(String[] args) {
         Path messageHistoryPath = Paths.get("src","main","common","messages","messageHistory.json");
@@ -26,6 +27,8 @@ public class ServerMain {
                 server.broadcast(sender,msg);
             }
         });
+
+        server.setConnectionListener(new ServerConnectionListener(server));
 
         server.start();
     }
