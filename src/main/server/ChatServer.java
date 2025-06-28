@@ -1,8 +1,10 @@
-package main.Server;
+package main.server;
 
 import com.google.gson.Gson;
-import main.Common.Messages.ChatMessage;
-import main.Common.Messages.MessageListener;
+import main.common.connections.ConnectionListener;
+import main.common.messages.ChatMessage;
+import main.common.messages.MessageListener;
+import main.common.TimeUtils;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -10,7 +12,7 @@ import java.net.Socket;
 import java.util.*;
 
 public class ChatServer {
-    private final int port;
+    private final int PORT;
 
     private final List<Socket> clients = Collections.synchronizedList(new ArrayList<Socket>());
     private final Map<Socket,String> clientToUsername = new HashMap<>();
@@ -21,21 +23,23 @@ public class ChatServer {
 
     private final Gson gson = new Gson();
     private MessageListener messageListener;
+    private ConnectionListener connectionListener;
 
     private final int loggingInterval = 5000;
 
     public ChatServer(int port) {
-        this.port = port;
+        this.PORT = port;
     }
 
     public void start() {
         try {
-            serverSocket = new ServerSocket(port);
+            serverSocket = new ServerSocket(PORT);
         } catch (IOException e) {
             System.out.println("Starting server failed : " + e.getMessage());
         }
 
         Thread logClientsThread = new Thread(this::logClients);
+        logClientsThread.setDaemon(true);
         logClientsThread.start();
 
         waitForNewClients();
@@ -44,6 +48,7 @@ public class ChatServer {
     public void setMessageListener(MessageListener messageListener) {
         this.messageListener = messageListener;
     }
+    public void setConnectionListener(ConnectionListener connectionListener) {this.connectionListener = connectionListener;}
 
     public void setClientUsername(Socket client, String username) {
         this.clientToUsername.put(client,username);
@@ -75,11 +80,23 @@ public class ChatServer {
         }
     }
 
+    public void sendChatMessage(Socket client, ChatMessage chatMessage) {
+        try {
+            BufferedWriter clientWriter = this.clientWriters.get(client);
+            clientWriter.write(gson.toJson(chatMessage));
+            clientWriter.newLine();
+            clientWriter.flush();
+        } catch (IOException e) {
+            System.out.println("Error while sending message to client!");
+            closeConnection(client);
+        }
+    }
+
     private void logClients() {
         while (true) {
             System.out.println("Connected Clients : " + Arrays.toString(clientToUsername.values().toArray()));
 
-            ChatMessage connectedClientsMsg = new ChatMessage(null,Arrays.toString(clientToUsername.values().toArray()));
+            ChatMessage connectedClientsMsg = new ChatMessage("Server","ConnectedClients" + Arrays.toString(clientToUsername.values().toArray()), TimeUtils.currentTimestamp());
             broadcast(null,connectedClientsMsg);
             try {
                 Thread.sleep(loggingInterval);
@@ -94,6 +111,10 @@ public class ChatServer {
             while(true) {
                 Socket newConnection = this.serverSocket.accept();
                 addClient(newConnection);
+
+                if(connectionListener != null) {
+                    connectionListener.onConnect(newConnection);
+                }
             }
         } catch (IOException e) {
             System.out.println("Error while accepting new client connection");
@@ -105,8 +126,6 @@ public class ChatServer {
             this.clients.add(client);
             this.clientReaders.put(client,new BufferedReader(new InputStreamReader(client.getInputStream())));
             this.clientWriters.put(client,new BufferedWriter(new OutputStreamWriter(client.getOutputStream())));
-
-            System.out.println("New connection from " + client.getInetAddress().toString());
 
             Thread clientListenerThread = new Thread(()->listen(client));
             clientListenerThread.setDaemon(true);

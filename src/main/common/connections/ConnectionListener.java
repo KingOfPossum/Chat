@@ -1,7 +1,9 @@
-package main.Common.Connections;
+package main.common.connections;
+
+import java.net.Socket;
 
 public interface ConnectionListener {
-    void onConnect();
+    void onConnect(Socket client);
     void onReconnect();
     void onDisconnect();
     void onConnectionStatusChange(ConnectionStatus previousStatus, ConnectionStatus currentStatus);
