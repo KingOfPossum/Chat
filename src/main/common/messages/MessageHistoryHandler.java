@@ -33,6 +33,8 @@ public class MessageHistoryHandler {
         }
     }
 
+    public MessageHistory getMessageHistory() {return messageHistory;}
+
     public void addMessage(ChatMessage message) {
         messageHistory.history().add(message);
         messageHistory.history().sort(Comparator.comparing(ChatMessage::timestamp));

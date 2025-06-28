@@ -143,7 +143,7 @@ public class ChatClient {
             }
 
             if(connectionListener != null && !connectionStatus.equals(ConnectionStatus.RECONNECTING)) {
-                connectionListener.onConnect();
+                connectionListener.onConnect(socket);
             }
         } catch(IOException e) {
             System.out.println("Error while getting Output or Input Stream of socket : " + e.getMessage());

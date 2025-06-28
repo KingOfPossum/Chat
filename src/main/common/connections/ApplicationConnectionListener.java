@@ -3,6 +3,8 @@ package main.common.connections;
 import javafx.application.Platform;
 import main.client.ClientApplication;
 
+import java.net.Socket;
+
 public class ApplicationConnectionListener implements ConnectionListener {
 
     private final ClientApplication clientApp;
@@ -12,7 +14,7 @@ public class ApplicationConnectionListener implements ConnectionListener {
     }
 
     @Override
-    public void onConnect() {
+    public void onConnect(Socket client) {
         Platform.runLater(clientApp::initClient);
     }
 

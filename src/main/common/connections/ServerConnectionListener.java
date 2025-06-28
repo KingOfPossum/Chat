@@ -1,18 +1,31 @@
 package main.common.connections;
 
+import com.google.gson.Gson;
+import main.common.messages.ChatMessage;
+import main.common.messages.MessageHistory;
 import main.server.ChatServer;
-import main.server.ServerMain;
+import main.common.TimeUtils;
+
+import java.net.Socket;
 
 public class ServerConnectionListener implements ConnectionListener {
 
     private final ChatServer server;
+    private MessageHistory messageHistory;
 
-    public ServerConnectionListener(ChatServer server) {
+    public ServerConnectionListener(ChatServer server, MessageHistory messageHistory) {
         this.server = server;
+        this.messageHistory = messageHistory;
     }
 
     @Override
-    public void onConnect() {}
+    public void onConnect(Socket client) {
+        System.out.println("Client connected: " + client.getInetAddress());
+
+        Gson gson = new Gson();
+        ChatMessage historyMessage = new ChatMessage("Server","MessageHistory" + gson.toJson(messageHistory), TimeUtils.currentTimestamp());
+        server.sendChatMessage(client, historyMessage);
+    }
 
     @Override
     public void onReconnect() {}

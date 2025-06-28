@@ -88,6 +88,10 @@ public class ClientApplication extends Application {
         textArea.appendText(userName + " : " + message + "\n");
     }
 
+    public void setTextAreaText(String txt) {
+        textArea.setText(txt);
+    }
+
     private void sendInitMessage() {
         ChatMessage initMessage = new ChatMessage(userName,"Init", TimeUtils.currentTimestamp());
         client.sendMessage(initMessage);

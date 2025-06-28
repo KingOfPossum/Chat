@@ -12,7 +12,7 @@ public class ServerMain {
     private static MessageHistoryHandler messageHistoryHandler;;
 
     public static void main(String[] args) {
-        Path messageHistoryPath = Paths.get("src","main","common","messages","messageHistory.json");
+        Path messageHistoryPath = Paths.get("src","data","messageHistory.json");
         messageHistoryHandler = new MessageHistoryHandler(messageHistoryPath);
 
         ChatServer server = new ChatServer(PORT);
@@ -28,7 +28,7 @@ public class ServerMain {
             }
         });
 
-        server.setConnectionListener(new ServerConnectionListener(server));
+        server.setConnectionListener(new ServerConnectionListener(server,messageHistoryHandler.getMessageHistory()));
 
         server.start();
     }

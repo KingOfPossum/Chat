@@ -39,6 +39,7 @@ public class ChatServer {
         }
 
         Thread logClientsThread = new Thread(this::logClients);
+        logClientsThread.setDaemon(true);
         logClientsThread.start();
 
         waitForNewClients();
@@ -79,7 +80,7 @@ public class ChatServer {
         }
     }
 
-    public void send(Socket client, ChatMessage chatMessage) {
+    public void sendChatMessage(Socket client, ChatMessage chatMessage) {
         try {
             BufferedWriter clientWriter = this.clientWriters.get(client);
             clientWriter.write(gson.toJson(chatMessage));
@@ -95,7 +96,7 @@ public class ChatServer {
         while (true) {
             System.out.println("Connected Clients : " + Arrays.toString(clientToUsername.values().toArray()));
 
-            ChatMessage connectedClientsMsg = new ChatMessage(null,Arrays.toString(clientToUsername.values().toArray()), TimeUtils.currentTimestamp());
+            ChatMessage connectedClientsMsg = new ChatMessage("Server","ConnectedClients" + Arrays.toString(clientToUsername.values().toArray()), TimeUtils.currentTimestamp());
             broadcast(null,connectedClientsMsg);
             try {
                 Thread.sleep(loggingInterval);
@@ -112,7 +113,7 @@ public class ChatServer {
                 addClient(newConnection);
 
                 if(connectionListener != null) {
-                    connectionListener.onConnect();
+                    connectionListener.onConnect(newConnection);
                 }
             }
         } catch (IOException e) {
@@ -125,8 +126,6 @@ public class ChatServer {
             this.clients.add(client);
             this.clientReaders.put(client,new BufferedReader(new InputStreamReader(client.getInputStream())));
             this.clientWriters.put(client,new BufferedWriter(new OutputStreamWriter(client.getOutputStream())));
-
-            System.out.println("New connection from " + client.getInetAddress().toString());
 
             Thread clientListenerThread = new Thread(()->listen(client));
             clientListenerThread.setDaemon(true);

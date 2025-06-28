@@ -1,8 +1,10 @@
 package main.client;
 
+import com.google.gson.Gson;
 import main.common.connections.ConnectionStatus;
 import main.common.messages.ChatMessage;
 import main.common.TimeUtils;
+import main.common.messages.MessageHistory;
 
 import java.util.Scanner;
 
@@ -19,18 +21,31 @@ public class ClientMain {
         setUserName();
 
         client = new ChatClient(SERVER_IP, PORT);
+
+        client.setMessageListener((sender,chatMessage) -> {
+            if(chatMessage.userName().startsWith("Server")) {
+                if(chatMessage.message().startsWith("MessageHistory")) {
+                    String messageHistoryJson = chatMessage.message().substring("MessageHistory".length());
+
+                    Gson gson = new Gson();
+
+                    MessageHistory messageHistory = gson.fromJson(messageHistoryJson,MessageHistory.class);
+
+                    for(ChatMessage historyMessage : messageHistory.history()) {
+                        System.out.println(historyMessage.userName() + " : " + historyMessage.message());
+                    }
+                }
+            }
+            else {
+                System.out.println(chatMessage.userName() + " : " + chatMessage.message());
+            }
+        });
+
         client.start();
 
         if(client.getConnectionStatus().equals(ConnectionStatus.CONNECTED)){
             ChatMessage initMessage = new ChatMessage(userName,"Init", TimeUtils.currentTimestamp());
             client.sendMessage(initMessage);
-
-            client.setMessageListener((sender,chatMessage) -> {
-                if(chatMessage.userName() == null) {
-                    return;
-                }
-                System.out.println(chatMessage.userName() + " : " + chatMessage.message());
-            });
 
             receiveUserInput();
         }
