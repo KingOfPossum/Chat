@@ -9,8 +9,8 @@ import main.common.messages.MessageHistory;
 import java.util.Scanner;
 
 public class ClientMain {
-    private static final String SERVER_IP = "0.0.0.0";
-    private static final int PORT = 12345;
+    private static String serverIP = "0.0.0.0";
+    private static int port = 12345;
 
     private static ChatClient client;
 
@@ -18,9 +18,14 @@ public class ClientMain {
     private static String userName;
 
     public static void main(String[] args) {
+        setIP();
+        setPort();
+
+        System.out.println("IP : " + serverIP + "\tPort : " + port);
+
         setUserName();
 
-        client = new ChatClient(SERVER_IP, PORT);
+        client = new ChatClient(serverIP, port);
 
         client.setMessageListener((sender,chatMessage) -> {
             if(chatMessage.userName().startsWith("Server")) {
@@ -51,9 +56,31 @@ public class ClientMain {
         }
     }
 
+    private static void setIP(){
+        System.out.print("IP (default: " + serverIP + "): ");
+        String input = scanner.nextLine();
+        if(!input.isEmpty()) {
+            serverIP = input;
+        }
+    }
+
+    private static void setPort() {
+        System.out.print("Port (default: " + port + "): ");
+        String input = scanner.nextLine();
+        if(!input.isEmpty()) {
+            port = Integer.parseInt(input);
+        }
+    }
+
     private static void setUserName() {
-        System.out.print("Please enter your user name: ");
-        userName = scanner.nextLine();
+        do {
+            System.out.print("Please enter your user name: ");
+            userName = scanner.nextLine();
+
+            if(userName.isEmpty()){
+                System.out.println("Username cannot be empty. Please try again.");
+            }
+        } while(userName.isEmpty());
     }
 
     private static void receiveUserInput(){
