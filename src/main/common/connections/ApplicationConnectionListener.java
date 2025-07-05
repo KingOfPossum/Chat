@@ -19,6 +19,9 @@ public class ApplicationConnectionListener implements ConnectionListener {
     }
 
     @Override
+    public void onLogin(Socket client, String username) {}
+
+    @Override
     public void onReconnect() {
         System.out.println("Reconnected");
     }

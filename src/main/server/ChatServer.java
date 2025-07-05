@@ -25,7 +25,7 @@ public class ChatServer {
     private MessageListener messageListener;
     private ConnectionListener connectionListener;
 
-    private final int loggingInterval = 5000;
+    private final int loggingInterval = 100;
 
     public ChatServer(int port) {
         this.PORT = port;
@@ -49,6 +49,14 @@ public class ChatServer {
         this.messageListener = messageListener;
     }
     public void setConnectionListener(ConnectionListener connectionListener) {this.connectionListener = connectionListener;}
+
+    public MessageListener getMessageListener() {
+        return this.messageListener;
+    }
+
+    public ConnectionListener getConnectionListener() {
+        return this.connectionListener;
+    }
 
     public void setClientUsername(Socket client, String username) {
         this.clientToUsername.put(client,username);

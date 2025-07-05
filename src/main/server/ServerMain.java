@@ -1,5 +1,6 @@
 package main.server;
 
+import com.google.gson.Gson;
 import main.common.TimeUtils;
 import main.common.connections.ServerConnectionListener;
 import main.common.messages.ChatMessage;
@@ -29,8 +30,7 @@ public class ServerMain {
                     return;
                 }
 
-                server.sendChatMessage(sender,new ChatMessage("Server","Login response: Login successful", TimeUtils.currentTimestamp()));
-                server.setClientUsername(sender,msg.userName());
+                server.getConnectionListener().onLogin(sender, msg.userName());
             }
             else {
                 System.out.println(sender + " : " + msg.message() + "(" + msg.timestamp() + ")");

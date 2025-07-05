@@ -21,6 +21,11 @@ public class ServerConnectionListener implements ConnectionListener {
     @Override
     public void onConnect(Socket client) {
         System.out.println("Client connected: " + client.getInetAddress());
+    }
+
+    public void onLogin(Socket client, String username) {
+        server.sendChatMessage(client,new ChatMessage("Server","Login response: Login successful", TimeUtils.currentTimestamp()));
+        server.setClientUsername(client,username);
 
         Gson gson = new Gson();
         ChatMessage historyMessage = new ChatMessage("Server","MessageHistory" + gson.toJson(messageHistory), TimeUtils.currentTimestamp());

@@ -23,5 +23,6 @@
 hs_err_pid*
 replay_pid*
 
-# MessageHistory
-src/Common/Messages/messageHistory.json
+# Data
+src/data/messageHistory.json
+src/data/accounts.json
