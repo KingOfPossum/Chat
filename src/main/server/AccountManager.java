@@ -53,10 +53,18 @@ public class AccountManager {
 
     public boolean tryLogin(String username,String password) {
         for(Account account : accounts) {
-            if(account.username().equals(username) && account.password().equals(password)) {
-                return true;
+            if(account.username().equals(username)) {
+                if(account.password().equals(password)) {
+                    System.out.println("Login successful for user: " + username);
+                    return true;
+                } else {
+                    System.out.println("Login failed for user: " + username + ". Incorrect password.");
+                    return false;
+                }
             }
         }
-        return false;
+
+        createAccount(new Account(username,password));
+        return true;
     }
 }

@@ -1,6 +1,8 @@
 package main.server;
 
+import main.common.TimeUtils;
 import main.common.connections.ServerConnectionListener;
+import main.common.messages.ChatMessage;
 import main.common.messages.MessageHistoryHandler;
 
 import java.nio.file.Path;
@@ -21,7 +23,13 @@ public class ServerMain {
         ChatServer server = new ChatServer(PORT);
 
         server.setMessageListener((sender,msg) -> {
-            if(msg.message().equals("Init")) {
+            if(msg.message().startsWith("Login : ")) {
+                if(!accountManager.tryLogin(msg.userName(),msg.message().substring(8))) {
+                    server.sendChatMessage(sender,new ChatMessage("Server","Login response: Login failed", TimeUtils.currentTimestamp()));
+                    return;
+                }
+
+                server.sendChatMessage(sender,new ChatMessage("Server","Login response: Login successful", TimeUtils.currentTimestamp()));
                 server.setClientUsername(sender,msg.userName());
             }
             else {

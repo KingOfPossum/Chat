@@ -5,6 +5,7 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -14,6 +15,7 @@ import javafx.stage.Stage;
 import main.client.ui.components.ApplicationSetupDialog;
 import main.common.connections.ApplicationConnectionListener;
 import main.common.connections.ConnectionStatus;
+import main.common.connections.LoginStatus;
 import main.common.messages.ApplicationMessageListener;
 import main.common.messages.ChatMessage;
 import main.common.TimeUtils;
@@ -27,10 +29,13 @@ public class ClientApplication extends Application {
     private Stage mainStage;
     private ChatClient client;
     private String userName;
+    private String password;
 
     private Text connectionStatusTxt;
     private TextArea clientsField;
     private TextArea textArea;
+
+    public LoginStatus loginStatus = LoginStatus.NOT_LOGGED_IN;
 
     @Override
     public void start(Stage stage) {
@@ -59,13 +64,15 @@ public class ClientApplication extends Application {
         serverIP = setupData.get().ip();
         serverPort = setupData.get().port();
         userName = setupData.get().userName();
+        password = setupData.get().password();
+
         return true;
     }
 
     private boolean validateSetupData(ApplicationSetupDialog.SetupData setupData) {
         System.out.println("Validating setup data: " + setupData);
 
-        if(setupData.ip() == null || setupData.ip().isEmpty() || setupData.port() <= 0 || setupData.userName() == null || setupData.userName().isEmpty()) {
+        if(setupData.ip() == null || setupData.ip().isEmpty() || setupData.port() <= 0 || setupData.userName() == null || setupData.userName().isEmpty() || setupData.password() == null || setupData.password().isEmpty()) {
             showSetupAlert();
             return false;
         }
@@ -127,8 +134,21 @@ public class ClientApplication extends Application {
     }
 
     private void sendInitMessage() {
-        ChatMessage initMessage = new ChatMessage(userName,"Init", TimeUtils.currentTimestamp());
+        ChatMessage initMessage = new ChatMessage(userName,"Login : " + password, TimeUtils.currentTimestamp());
         client.sendMessage(initMessage);
+    }
+
+    public void setLoginStatus(LoginStatus loginStatus) {
+        if(loginStatus.equals(LoginStatus.LOGIN_FAILED)) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Login Error");
+            alert.showAndWait();
+
+            Platform.exit();
+        }
+        else if(loginStatus.equals(LoginStatus.LOGIN_SUCCESS)) {
+            this.loginStatus = loginStatus;
+        }
     }
 
     public Scene createScene() {
