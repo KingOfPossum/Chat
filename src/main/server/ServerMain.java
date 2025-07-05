@@ -15,6 +15,9 @@ public class ServerMain {
         Path messageHistoryPath = Paths.get("src","data","messageHistory.json");
         messageHistoryHandler = new MessageHistoryHandler(messageHistoryPath);
 
+        AccountManager accountManager = new AccountManager(Paths.get("src","data","accounts.json"));
+        System.out.println(accountManager.accounts);
+
         ChatServer server = new ChatServer(PORT);
 
         server.setMessageListener((sender,msg) -> {
